@@ -5,14 +5,13 @@ use crate::Player;
 
 use permute::permutations_of;
 
-pub struct Solver {
-	slots: Slots,
+pub struct Solver<'a> {
+	slots: Slots<'a>,
 	players: Vec<Player>,
-	// player_order_permutations_iterator: Box<Iterator<Item = impl Iterator<Item = &String>>>
 }
 
-impl Solver {
-	pub fn new(slots: Slots, players: Vec<Player>) -> Result<Solver, Box<dyn Error>> {
+impl Solver<'_> {
+	pub fn new<'a>(slots: Slots<'a>, players: Vec<Player>) -> Result<Solver<'a>, Box<dyn Error>> {
 
 		Ok(Solver{slots, players})
 	}
@@ -37,7 +36,6 @@ impl Solver {
 					}
 
 					if error < lowest_mean_squared_error {
-						crate::log(&format!("Found new solution:\n {}", workspace_slots));
 						lowest_mean_squared_error = error;
 						potential_solutions.clear();
 						if potential_solutions.iter().find(|p| p == &&workspace_slots).is_none() {
@@ -55,15 +53,6 @@ impl Solver {
 
 	pub fn calculate_solution_for_permutation<'a>(&self, slots_buf: &mut Slots, permutation: impl Iterator<Item=&'a Player>) -> Result<(), Box<dyn Error>> {
 		for player in permutation {
-			// slots_buf.assign(player)?
-
-			// match slots_buf.assign(player) {
-			// 	Ok(_) => {},
-			// 	Err(_) => {
-			// 		crate::log(&format!("Could not find slot for {}. Current slot layout:\n{}", player.name, slots_buf));
-			// 	}
-			// }
-
 			slots_buf.assign(player)?
 		}
 		Ok(())

@@ -9,7 +9,6 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::str::FromStr;
 
-use once_cell::sync::OnceCell;
 use serde_json::{self, Value};
 
 use job::Job;
@@ -19,9 +18,6 @@ use solver::Solver;
 
 use wasm_bindgen::prelude::*;
 
-// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
-// allocator.
-#[cfg(feature = "wee_alloc")]
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
@@ -45,35 +41,31 @@ pub fn solve(definitions: &str, desired_composition: &str, job_preferences: &str
     // log(job_preferences);
 
     utils::set_panic_hook();
-    load_definitions(definitions).unwrap();
 
+    let definitions = parse_definitions(definitions).unwrap();
     let players = job_preferences_to_players(job_preferences).unwrap();
     let json_composition: Value = serde_json::from_str(&desired_composition).unwrap();
-    let slots = Slots::new(json_composition.as_object().ok_or("Expected composition to be a JSON object").unwrap()).unwrap();
+    let composition = json_composition.as_object().ok_or("Expected composition to be a JSON object").unwrap();
+    let slots = Slots::new(composition, &definitions).unwrap();
     let mut solver = Solver::new(slots, players).unwrap();
     let results = solver.solve();
 
     format!("{}", results[0])
-    // format!("{}", "worked")
 }
 
-pub static DEFINITIONS: OnceCell<HashMap<String, Vec<Job>>> = OnceCell::new();
+fn parse_definitions(raw_definitions: &str) -> Result<HashMap<String, Vec<Job>>, Box<dyn Error>> {
+    let mut definitions = HashMap::new();
+    let raw_definitions: Value = serde_json::from_str(raw_definitions)?;
 
-fn load_definitions(raw_definitions: &str) -> Result<(), Box<dyn Error>> {
-    let mut classifications = HashMap::new();
-    let raw_classifications: Value = serde_json::from_str(raw_definitions)?;
-
-    for (name, raw_jobs) in raw_classifications.as_object().ok_or("Expected a JSON object")?.iter() {
+    for (name, raw_jobs) in raw_definitions.as_object().ok_or("Expected a JSON object")?.iter() {
         let jobs: Vec<Job> = raw_jobs.as_array().ok_or(format!("Expected jobs for {} to be an array", name))?.iter().map(|raw_job|{
             Job::from_str(raw_job.as_str().unwrap()).unwrap()
         }).collect();
 
-        classifications.insert(name.to_owned(), jobs);
+        definitions.insert(name.to_owned(), jobs);
     }
 
-    DEFINITIONS.set(classifications).unwrap();
-
-    Ok(())
+    Ok(definitions)
 }
 
 fn job_preferences_to_players(raw_input: &str) -> Result<Vec<Player>, Box<dyn Error>> {

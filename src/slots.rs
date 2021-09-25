@@ -6,21 +6,22 @@ use serde_json::Value;
 use crate::Job;
 use crate::Player;
 use crate::slot::Slot;
+use std::collections::HashMap;
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct Slots {
-    pub slots: Vec<Slot>,
+pub struct Slots<'a> {
+    pub slots: Vec<Slot<'a>>,
     claimed_jobs: Vec<Job>,
 }
 
-impl Slots {
-    pub fn new(composition: &serde_json::Map<String, Value>) -> Result<Slots, Box<dyn Error>> {
+impl Slots<'_> {
+    pub fn new<'a>(composition: &serde_json::Map<String, Value>, definitions: &'a HashMap<String, Vec<Job>>) -> Result<Slots<'a>, Box<dyn Error>> {
         let mut slots = Vec::new();
 
         for (role, raw_count) in composition.iter() {
             let count = raw_count.as_u64().ok_or(format!("Expected value for {} to be a number", role))?;
             for _ in 0..count {
-                slots.push(Slot::new(role.clone()))
+                slots.push(Slot::new(role.clone(), definitions)?)
             }
         }
 
@@ -57,7 +58,7 @@ impl Slots {
     }
 }
 
-impl fmt::Display for Slots {
+impl fmt::Display for Slots<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for slot in &self.slots {
             write!(f, "{}\n", slot)?;
