@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 use std::fmt;
 use std::error::Error;
+use std::hash::{Hash, Hasher};
 
 use crate::Job;
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialOrd, Ord, Eq)]
 pub struct Slot<'a> {
     role: String,
     role_jobs: &'a Vec<Job>,
@@ -20,8 +21,8 @@ impl Slot<'_> {
         return Ok(Slot {
             role_jobs,
             role,
-            player_name: None, 
-            rank: None, 
+            player_name: None,
+            rank: None,
             job: None,
         })
     }
@@ -59,5 +60,23 @@ impl fmt::Display for Slot<'_> {
         } else {
             write!(f, "Empty slot: {}", self.role)
         }
+    }
+}
+
+impl PartialEq for Slot<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.role == other.role &&
+        self.player_name == other.player_name &&
+        self.rank == other.rank &&
+        self.job == other.job
+    }
+}
+
+impl Hash for Slot<'_> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.role.hash(state);
+        self.player_name.hash(state);
+        self.rank.hash(state);
+        self.job.hash(state);
     }
 }

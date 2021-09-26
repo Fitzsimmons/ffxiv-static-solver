@@ -1,7 +1,7 @@
 use serde_derive::{Deserialize, Serialize};
 use strum_macros::{EnumString, Display};
 
-#[derive(Display, Debug, EnumString, Clone, Copy, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Display, Debug, EnumString, Clone, Copy, Serialize, Deserialize, Eq, PartialEq, PartialOrd, Ord, Hash)]
 #[repr(u8)]
 pub enum Job {
     PLD = 0,

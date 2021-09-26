@@ -3,6 +3,8 @@ use std::error::Error;
 use crate::Slots;
 use crate::Player;
 
+use std::collections::HashSet;
+
 use permute::permutations_of;
 
 pub struct Solver<'a> {
@@ -16,8 +18,8 @@ impl Solver<'_> {
 		Ok(Solver{slots, players})
 	}
 
-	pub fn solve(&mut self) -> Vec<Slots> {
-		let mut potential_solutions = Vec::new();
+	pub fn solve(&mut self) -> HashSet<Slots> {
+		let mut potential_solutions = HashSet::new();
 		let mut lowest_mean_squared_error: f64 = f64::MAX;
 
 		let player_permutations = permutations_of(&self.players);
@@ -31,16 +33,16 @@ impl Solver<'_> {
 			match workspace_slots.mean_squared_error() {
 				Some(error) => {
 					if error == lowest_mean_squared_error {
-						potential_solutions.push(workspace_slots.clone());
+						if ! potential_solutions.contains(&workspace_slots) {
+							potential_solutions.insert(workspace_slots.clone());
+						}
 						continue;
 					}
 
 					if error < lowest_mean_squared_error {
 						lowest_mean_squared_error = error;
 						potential_solutions.clear();
-						if potential_solutions.iter().find(|p| p == &&workspace_slots).is_none() {
-							potential_solutions.push(workspace_slots.clone());
-						}
+						potential_solutions.insert(workspace_slots.clone());
 						continue;
 					}
 				}
@@ -55,6 +57,7 @@ impl Solver<'_> {
 		for player in permutation {
 			slots_buf.assign(player)?
 		}
+		slots_buf.sort();
 		Ok(())
 	}
 }

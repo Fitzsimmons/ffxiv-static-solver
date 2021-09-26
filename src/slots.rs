@@ -6,9 +6,11 @@ use serde_json::Value;
 use crate::Job;
 use crate::Player;
 use crate::slot::Slot;
-use std::collections::HashMap;
 
-#[derive(Clone, PartialEq, Eq)]
+use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
+
+#[derive(Clone, Eq)]
 pub struct Slots<'a> {
     pub slots: Vec<Slot<'a>>,
     claimed_jobs: Vec<Job>,
@@ -56,6 +58,16 @@ impl Slots<'_> {
             .sum::<Option<usize>>()
             .map(|sum| (sum * sum) as f64 / self.slots.len() as f64)
     }
+
+    pub fn sort(&mut self) {
+        self.slots.sort();
+    }
+}
+
+impl PartialEq for Slots<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.slots == other.slots
+    }
 }
 
 impl fmt::Display for Slots<'_> {
@@ -66,3 +78,10 @@ impl fmt::Display for Slots<'_> {
         Ok(())
     }
 }
+
+impl Hash for Slots<'_> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.slots.hash(state);
+    }
+}
+
