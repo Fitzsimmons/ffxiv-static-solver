@@ -41,15 +41,15 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 	let job_preferences = r#"
 	{
-      "Yorvo Hawke": ["MNK", "DRG", "NIN", "BRD", "BLM", "SMN", "MCH", "SAM", "RDM", "DNC", "WAR", "GNB", "SCH", "WHM"],
-      "Squidgy Bunny": ["MNK", "DRG", "NIN", "BRD", "BLM", "SMN", "MCH", "SAM", "RDM", "DNC", "WAR", "GNB", "SCH", "WHM"],
-      "Renfleur Orinoux": ["MNK", "DRG", "NIN", "BRD", "BLM", "SMN", "MCH", "SAM", "RDM", "DNC", "WAR", "GNB", "SCH", "WHM"],
-      "Zelle Tamjin": ["MNK", "DRG", "NIN", "BRD", "BLM", "SMN", "MCH", "SAM", "RDM", "DNC", "WAR", "GNB", "SCH", "WHM"],
-      "Era Dere": ["MNK", "DRG", "NIN", "BRD", "BLM", "SMN", "MCH", "SAM", "RDM", "DNC", "WAR", "GNB", "SCH", "WHM"],
-      "Brando Id": ["MNK", "DRG", "NIN", "BRD", "BLM", "SMN", "MCH", "SAM", "RDM", "DNC", "WAR", "GNB", "SCH", "WHM"],
-      "Alleriana Valyrian": ["MNK", "DRG", "NIN", "BRD", "BLM", "SMN", "MCH", "SAM", "RDM", "DNC", "WAR", "GNB", "SCH", "WHM"],
-      "Reye Fenris": ["MNK", "DRG", "NIN", "BRD", "BLM", "SMN", "MCH", "SAM", "RDM", "DNC", "WAR", "GNB", "SCH", "WHM"]
-    }
+	  "Yorvo Hawke": ["DRG", "GNB"],
+	  "Squidgy Bunny": ["NIN", "SMN", "WHM", "PLD"],
+	  "Renfleur Orinoux": ["DRK", "SAM"],
+	  "Zelle Tamjin": ["PLD", "BLM"],
+	  "Era Dere": ["WHM", "DNC"],
+	  "Brando Id": ["SCH"],
+	  "Alleriana Valyrian": ["RDM", "BLM"],
+	  "Reye Fenris": ["BRD", "DRG"]
+	}
 	"#;
 
 	let definitions = parse_definitions(definitions)?;
@@ -64,7 +64,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 	for (index, result) in results.iter().enumerate() {
 		println!("Result {}:", index);
-		println!("{}", result);
+		println!("{}", result.to_json()?);
 	}
 
 	Ok(())

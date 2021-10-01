@@ -10,11 +10,19 @@ use crate::slot::Slot;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
+use indexmap::IndexMap;
+
 #[derive(Clone, Eq)]
 pub struct Slots<'a> {
     pub slots: Vec<Slot<'a>>,
     claimed_jobs: Vec<Job>,
 }
+
+use serde::{Serialize};
+
+#[derive(Serialize)]
+#[serde(transparent)]
+struct SerializedSlots(IndexMap<String, String>);
 
 impl Slots<'_> {
     pub fn new<'a>(composition: &serde_json::Map<String, Value>, definitions: &'a HashMap<String, Vec<Job>>) -> Result<Slots<'a>, Box<dyn Error>> {
@@ -62,6 +70,21 @@ impl Slots<'_> {
     pub fn sort(&mut self) {
         self.slots.sort();
     }
+
+    pub fn to_json(&self) -> Result<String, Box<dyn Error>> {
+        let mut pairs: IndexMap<String, String> = IndexMap::new();
+
+        self.slots.iter().map(|s| {
+            let t: (String, String) = s.into();
+            t
+        }).for_each(|p| {
+            pairs.insert(p.0, p.1);
+        });
+
+        let s = SerializedSlots{0: pairs};
+
+        Ok(serde_json::to_string(&s)?)
+    }
 }
 
 impl PartialEq for Slots<'_> {
@@ -85,3 +108,29 @@ impl Hash for Slots<'_> {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_renders_to_json() {
+        let mut definitions = HashMap::new();
+        definitions.insert(String::from("Healer"), vec![Job::AST]);
+        definitions.insert(String::from("Tank"), vec![Job::GNB]);
+
+        let player1 = Player{ name: String::from("Yorvo"), jobs: vec![Job::GNB] };
+        let player2 = Player{ name: String::from("Brando"), jobs: vec![Job::AST] };
+
+        let slot1 = Slot::new(String::from("Tank"), &definitions).unwrap();
+        let slot2 = Slot::new(String::from("Healer"), &definitions).unwrap();
+
+        let mut slots = Slots{ claimed_jobs: vec![], slots: vec![slot1, slot2] };
+        slots.assign(&player1).unwrap();
+        slots.assign(&player2).unwrap();
+
+        let json = slots.to_json().unwrap();
+        let expected = r#"{"Yorvo":"GNB","Brando":"AST"}"#;
+
+        assert_eq!(&json, expected);
+    }
+}

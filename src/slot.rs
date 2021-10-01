@@ -55,11 +55,8 @@ impl Slot<'_> {
 
 impl fmt::Display for Slot<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.player_name.is_some() {
-            write!(f, "{}: {}", self.player_name.as_ref().unwrap(), self.job.unwrap())
-        } else {
-            write!(f, "Empty slot: {}", self.role)
-        }
+        let t: (String, String) = self.into();
+        write!(f, "{}: {}", t.0, t.1)
     }
 }
 
@@ -78,5 +75,15 @@ impl Hash for Slot<'_> {
         self.player_name.hash(state);
         self.rank.hash(state);
         self.job.hash(state);
+    }
+}
+
+impl From<&Slot<'_>> for (String, String) {
+    fn from(item: &Slot<'_>) -> (String, String) {
+        if item.player_name.is_some() {
+            (item.player_name.clone().unwrap(), item.job.unwrap().to_string())
+        } else {
+            (String::from("Empty Slot"), item.role.clone())
+        }
     }
 }
