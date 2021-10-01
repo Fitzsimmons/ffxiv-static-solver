@@ -40,10 +40,6 @@ pub fn solve(definitions: &str, desired_composition: &str, job_preferences: &str
 }
 
 fn inner_solve(definitions: &str, desired_composition: &str, job_preferences: &str) -> Result<String, Box<dyn Error>> {
-    // log(definitions);
-    // log(desired_composition);
-    // log(job_preferences);
-
     utils::set_panic_hook();
 
     let definitions = parse_definitions(definitions)?;
@@ -54,10 +50,7 @@ fn inner_solve(definitions: &str, desired_composition: &str, job_preferences: &s
     let mut solver = Solver::new(slots, players)?;
     let results = solver.solve();
 
-    match results.len() {
-        0 => Ok(String::from("No solutions found")),
-        _ => Ok(format!("{} results found, here's the first one:\n{}", results.len(), serde_json::to_string(results.iter().next().unwrap())?))
-    }
+    Ok(serde_json::to_string(&results)?)
 }
 
 fn parse_definitions(raw_definitions: &str) -> Result<HashMap<String, Vec<Job>>, Box<dyn Error>> {
