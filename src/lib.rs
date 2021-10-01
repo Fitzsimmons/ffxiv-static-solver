@@ -56,7 +56,7 @@ fn inner_solve(definitions: &str, desired_composition: &str, job_preferences: &s
 
     match results.len() {
         0 => Ok(String::from("No solutions found")),
-        _ => Ok(format!("{} results found, here's the first one:\n{}", results.len(), results.iter().next().unwrap().to_json()?))
+        _ => Ok(format!("{} results found, here's the first one:\n{}", results.len(), serde_json::to_string(results.iter().next().unwrap())?))
     }
 }
 

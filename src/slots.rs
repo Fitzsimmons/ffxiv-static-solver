@@ -10,19 +10,11 @@ use crate::slot::Slot;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
-use indexmap::IndexMap;
-
 #[derive(Clone, Eq)]
 pub struct Slots<'a> {
     pub slots: Vec<Slot<'a>>,
     claimed_jobs: Vec<Job>,
 }
-
-use serde::{Serialize};
-
-#[derive(Serialize)]
-#[serde(transparent)]
-struct SerializedSlots(IndexMap<String, String>);
 
 impl Slots<'_> {
     pub fn new<'a>(composition: &serde_json::Map<String, Value>, definitions: &'a HashMap<String, Vec<Job>>) -> Result<Slots<'a>, Box<dyn Error>> {
@@ -70,21 +62,6 @@ impl Slots<'_> {
     pub fn sort(&mut self) {
         self.slots.sort();
     }
-
-    pub fn to_json(&self) -> Result<String, Box<dyn Error>> {
-        let mut pairs: IndexMap<String, String> = IndexMap::new();
-
-        self.slots.iter().map(|s| {
-            let t: (String, String) = s.into();
-            t
-        }).for_each(|p| {
-            pairs.insert(p.0, p.1);
-        });
-
-        let s = SerializedSlots{0: pairs};
-
-        Ok(serde_json::to_string(&s)?)
-    }
 }
 
 impl PartialEq for Slots<'_> {
@@ -108,6 +85,22 @@ impl Hash for Slots<'_> {
     }
 }
 
+use serde::ser::{Serialize, Serializer, SerializeMap};
+
+impl Serialize for Slots<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(self.slots.len()))?;
+        for slot in &self.slots {
+            let pair: (String, String) = slot.into();
+            map.serialize_entry(&pair.0, &pair.1)?;
+        }
+        map.end()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -128,7 +121,7 @@ mod tests {
         slots.assign(&player1).unwrap();
         slots.assign(&player2).unwrap();
 
-        let json = slots.to_json().unwrap();
+        let json = serde_json::to_string(&slots).unwrap();
         let expected = r#"{"Yorvo":"GNB","Brando":"AST"}"#;
 
         assert_eq!(&json, expected);

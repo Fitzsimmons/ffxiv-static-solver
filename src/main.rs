@@ -60,12 +60,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 	let mut solver = Solver::new(slots, players)?;
 	let results = solver.solve();
 
-	println!("{} results found", results.len());
-
-	for (index, result) in results.iter().enumerate() {
-		println!("Result {}:", index);
-		println!("{}", result.to_json()?);
-	}
+	println!("{} result{} found", results.len(), if results.len() != 1 {"s"} else {""});
+	println!("{}", serde_json::to_string(&results)?);
 
 	Ok(())
 }
