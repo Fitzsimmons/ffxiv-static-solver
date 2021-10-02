@@ -21,9 +21,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 	  "ranged dps": ["BRD", "MCH", "DNC", "BLM", "RDM", "SMN"],
 	  "melee dps": ["DRG", "MNK", "SAM", "NIN", "RPR"],
 	  "tank": ["GNB", "PLD", "WAR", "DRK"],
+	  "healer": ["WHM", "SCH", "AST", "SGE"],
 	  "barrier healer": ["SCH", "SGE"],
 	  "pure healer": ["WHM", "AST"],
-	  "healer": ["WHM", "AST", "SCH", "SGE"],
 	  "mage": ["BLM", "RDM", "SMN"],
 	  "ranged physical": ["DNC", "BRD", "MCH"]
 	}
@@ -45,8 +45,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 	  "Squidgy Bunny": ["NIN", "SMN", "WHM", "PLD"],
 	  "Renfleur Orinoux": ["DRK", "SAM"],
 	  "Zelle Tamjin": ["PLD", "BLM"],
-	  "Era Dere": ["WHM", "DNC"],
-	  "Brando Id": ["SCH"],
+	  "Era Dere": ["WHM", "SCH", "DNC"],
+	  "Brando Id": ["AST"],
 	  "Alleriana Valyrian": ["RDM", "BLM"],
 	  "Reye Fenris": ["BRD", "DRG"]
 	}
@@ -60,7 +60,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 	let mut solver = Solver::new(slots, players)?;
 	let results = solver.solve();
 
-	println!("{} result{} found", results.len(), if results.len() != 1 {"s"} else {""});
+	eprintln!("{} result{} found", results.len(), if results.len() != 1 {"s"} else {""});
 	println!("{}", serde_json::to_string(&results)?);
 
 	Ok(())

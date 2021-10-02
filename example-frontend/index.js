@@ -1,7 +1,5 @@
 import * as solver from "ffxiv-static-solver";
 
-const button = document.getElementById("activate")
-
 const solve = () => {
   const definitions = document.getElementById("definitions").value
   const job_preferences = document.getElementById("job_preferences").value
