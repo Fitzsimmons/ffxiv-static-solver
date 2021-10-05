@@ -1,12 +1,17 @@
 const initialize = () => {
   const solver = new Worker("./worker.js");
+  solver.postMessage("init")
+
+  const workerReady = new Promise((resolve, reject) => {
+    solver.onmessage = (event) => {
+      resolve(event.data)
+    }
+  })
 
   const resultsEl = document.getElementById("results")
   const receive = (event) => {
     results.innerText = event.data
   }
-
-  solver.onmessage = receive
 
   const dispatch = () => {
     const definitions = document.getElementById("definitions").value
@@ -16,7 +21,17 @@ const initialize = () => {
     solver.postMessage([definitions, desired_composition, job_preferences])
   }
 
-  document.getElementById("activate").addEventListener("click", dispatch, false)
+  workerReady.then(() => {
+    solver.onmessage = receive
+  })
+
+  return workerReady
 }
 
-initialize();
+initialize().then(() => {
+  const button = document.getElementById("activate")
+
+  button.innerHTML = "Solve!"
+  button.disabled = false
+  button.addEventListener("click", dispatch, false)
+})
