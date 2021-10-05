@@ -1,15 +1,22 @@
-import * as solver from "ffxiv-static-solver";
+const initialize = () => {
+  const solver = new Worker("./worker.js");
 
-const solve = () => {
-  const definitions = document.getElementById("definitions").value
-  const job_preferences = document.getElementById("job_preferences").value
-  const desired_composition = document.getElementById("desired_composition").value
+  const resultsEl = document.getElementById("results")
+  const receive = (event) => {
+    results.innerText = event.data
+  }
 
-  console.time("solve")
-  const result = solver.solve(definitions, desired_composition, job_preferences)
-  console.timeEnd("solve")
+  solver.onmessage = receive
 
-  document.getElementById("results").innerText = result
+  const dispatch = () => {
+    const definitions = document.getElementById("definitions").value
+    const job_preferences = document.getElementById("job_preferences").value
+    const desired_composition = document.getElementById("desired_composition").value
+
+    solver.postMessage([definitions, desired_composition, job_preferences])
+  }
+
+  document.getElementById("activate").addEventListener("click", dispatch, false)
 }
 
-document.getElementById("activate").addEventListener("click", solve, false)
+initialize();
