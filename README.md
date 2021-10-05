@@ -6,19 +6,14 @@ This is a rust-wasm library for solving the problem of figuring out what job eac
 
 This package is currently an alpha-quality release by an amateur rust programmer. I also don't know very much about wasm either.
 
-* There are no input validations. It is absolutely possible to feed it browser-crashing input at this time.
+* There are no input validations. I imagine it is entirely possible to feed it browser-crashing input at this time.
 * Errors that occur in rust are thrown as string javascript exceptions. I have made no effort to make these error messages useful.
 
 See the Contributing section if you're interested in helping with these glaring problems.
 
 ## Usage
 
-There's only one function, `solve`. All arguments and the return value are strings in JSON format. A description of each follows. 
 
-```js
-import * as solver from "ffxiv-static-solver"
-const result = solver.solve(definitions, desired_composition, job_preferences)
-```
 
 A small webpack-based proof of concept frontend implementation can be found in the [example-frontend](example-frontend) directory.
 
