@@ -13,9 +13,37 @@ See the Contributing section if you're interested in helping with these glaring 
 
 ## Usage
 
+This library is distributed as a wasm module that's loaded and executed inside a Web Worker so that the computation can take place in the background. There's also a small wrapper ([client.js](js/client.js)) that abstracts away as much of these implementation details as possible.
 
+⚠️ The input and output from the client function are JSON-formatted strings; plain javascript objects are not supported at this time. See the Contributing section for more information. ⚠️
 
-A small webpack-based proof of concept frontend implementation can be found in the [example-frontend](example-frontend) directory.
+### Installing and sourcing the package
+
+Download the latest release from the [releases page](https://github.com/Fitzsimmons/ffxiv-static-solver/releases), and unzip into your project's public web directory.
+
+Include the client script in your html:
+
+```html
+...
+<!-- Adds `ffxiv_static_solver` as a global variable -->
+<script src="./ffxiv-static-solver/client.js"></script>
+
+<!-- 
+Use `initialize` to set up the background worker.
+It returns a function that can be used to query the solver.
+-->
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const solve = await ffxiv_static_solver.initialize()
+
+    // ...
+
+    const results = await solve(definitions, desired_composition, job_preferences)
+  });
+</script>
+```
+
+See the [example-frontend/index.html](example-frontend/index.html) for a more complete example.
 
 ### Role definitions
 
@@ -84,7 +112,7 @@ The results are an array of flat objects, where the keys are the player names an
 ]
 ```
 
-There could be multiple results, in the case of a tie (see the "How it works" section for more information about how solutions are scored). In the worst-case scenario (all players have identical preferences), the number of results will be the factorial of the number of players. For example, for an 8-player party, the worst case has 8! results, which is 40320. The library currently lacks a way to reject inputs that result in absurdly-sized result sets, so it's up to the client to handle this problem.
+There could be multiple results, in the case of a tie (see the "How it works" section for more information about how solutions are scored). In the worst-case scenario (all players have all jobs and in the same order), the number of results will be the factorial of the number of players. For example, for an 8-player party, the worst case has 8! results, which is 40320. The library currently lacks a way to reject inputs that result in absurdly-sized result sets, so it's up to the client to handle this problem.
 
 ## How it works
 
@@ -92,13 +120,15 @@ There could be multiple results, in the case of a tie (see the "How it works" se
 
 The `solve` funtion is exhasutive. It accomplishes this via nested loops.
 
-The outer loop iterates over every permutation of how the list of players can be ordered. The number of iterations is equal to the factorial of the number of players. I have found that for 8-player parties, the solution can be found in under a second, even for worst-case inputs.
+The outer loop iterates over every permutation of how the list of players can be ordered. The number of iterations is equal to the factorial of the number of players.
 
 The inner loop iterates over the list of players, assigning them the best unoccupied slot that can be found based on the order of the jobs provided.
 
+I have found that for 8-player parties, the solution can be found in under a second on average hardware, even for worst-case inputs.
+
 ### Scoring
 
-Each potential solution is scored using [Mean squared error](https://en.wikipedia.org/wiki/Mean_squared_error), where "error" is the index of the selected job from the player's preferences. Solutions that do not have the lowest mean squared error are rejected. However, some inputs can result in ties, so all of the results with the lowest score are returned. Mean squared error was selected to attempt to pick a "fair" solution, but other methods of scoring are obviously possible. If you have any suggestions about superior or alternative algorithms, don't hesitate to open an issue on github.
+Each potential solution is scored using [Mean squared error](https://en.wikipedia.org/wiki/Mean_squared_error), where "error" is the index of the selected job from the player's preferences (i.e. higher preference = lower error). Solutions that do not have the lowest mean squared error are rejected. However, some inputs can result in ties, so all of the results with the lowest score are returned. Mean squared error was selected in an attempt to pick a "fair" solution, but other methods of scoring are obviously possible. If you have any suggestions about superior or alternative algorithms, don't hesitate to open an issue on github.
 
 ## Known users
 
@@ -110,8 +140,10 @@ So far, the only known public usage of this package is the example implementatio
 
 Contributions welcome! Before starting work on a new feature or API change, check the github issues to see if it's already being worked on, or create your own.
 
-I'm especially interested in improving the API:
+Top items that I would appreicate help with:
 
-* Controlling iteration from javascript: while results are calculated somewhat quickly, I would like to give javascript more control over iteration, so that the browser doesn't lock up. I have not been able to figure out how to store an iterator in a struct in rust, which has prevented me from implementing a tick-based API.
-* It's unclear to me if an API that takes (and returns?) `&JsValue` instead of JSON-formatted `&str` would be possible/superior. Any feedback on that would be appreciated.
-* There are no input validations. Users can probably crash their own browser with malformed or comically large input.
+* The wasm module will throw javascript exceptions if it encounters errors but they're completely unhandled by the client javascript.
+* It's unclear to me if an API that takes (and returns?) plain javascript objects instead of JSON-formatted `&str` would be possible/superior. Any feedback on that would be appreciated.
+* There are no input validations. Users can probably crash their browser with malformed or comically large input.
+* Javascript packaging: I'm aware that old fashioned script-tag imports for javascript that put objects into the global scope are not modern. I've done this because I'm not sure how to ship the wasm-in-web-worker code as anything else, since I'm just following what the [wasm-bindgen examples](https://github.com/rustwasm/wasm-bindgen/tree/d4b21e7d66638f9ef46396f6179f1cde7b3fa352/examples/wasm-in-web-worker) do for that. Apparently there is improving support for loading web workers as modules, but firefox lacks support for it yet. I'm also not sure how that interacts with wasm, if at all.
+

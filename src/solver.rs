@@ -33,6 +33,7 @@ impl Solver<'_> {
 			match workspace_slots.mean_squared_error() {
 				Some(error) => {
 					if error == lowest_mean_squared_error {
+						// perform the check ahead of instead of blind-insertion to save ourselves from the clone
 						if ! potential_solutions.contains(&workspace_slots) {
 							potential_solutions.insert(workspace_slots.clone());
 						}
