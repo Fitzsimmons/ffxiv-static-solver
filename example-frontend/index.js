@@ -1,6 +1,6 @@
 const initialize = async () => {
   const solve = await ffxiv_static_solver.initialize()
-  
+
   const dispatch = async () => {
     const definitions = document.getElementById("definitions").value
     const job_preferences = document.getElementById("job_preferences").value
@@ -17,4 +17,7 @@ const initialize = async () => {
   button.addEventListener("click", dispatch, false)
 }
 
-initialize()
+document.addEventListener("DOMContentLoaded", () => {
+  initialize()
+});
+

@@ -1,15 +1,15 @@
-let ffxiv_static_solver;
-ffxiv_static_solver.initialize = () => {
-  const solver = new Worker("./worker.js");
+ffxiv_static_solver = {};
+ffxiv_static_solver.initialize = async () => {
+  const solver = new Worker("./ffxiv-static-solver/worker.js");
   solver.postMessage("init")
 
-  // rewrite as async function?
-  const workerReady = new Promise((resolve, reject) => {
+  const workerReady = new Promise((resolve, _reject) => {
     // the first message we recieve back is letting us know that initialization is complete
-    solver.onmessage = (event) => {
+    solver.onmessage = (_event) => {
       const solve = (definitions, desired_composition, job_preferences) => {
+        var receive = null
 
-        const solutionReady = new Promise((inner_resolve, inner_reject) => {
+        const solutionReady = new Promise((inner_resolve, _inner_reject) => {
           receive = (event) => {
             inner_resolve(event.data)
           }
@@ -21,7 +21,6 @@ ffxiv_static_solver.initialize = () => {
         return solutionReady
       }
 
-      // we resolve this promise with a function that can dispatch a message to the worker and returns a promise that resolves with the solution
       resolve(solve)
     }
   })
