@@ -10,5 +10,5 @@ set -euo pipefail
 
 	cd example-frontend
 
-	aws --profile fitzsimmons --region us-east-1 s3 sync --delete . s3://ffxiv-static-solver-production
+	aws --profile fitzsimmons --region us-east-2 s3 sync --delete . s3://ffxiv-static-solver-production
 )

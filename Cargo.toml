@@ -1,8 +1,10 @@
 [package]
 name = "ffxiv-static-solver"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Justin Fitzsimmons <justin@fitzsimmons.ca>"]
 edition = "2018"
+license = "GPL-3.0-only"
+repository = "https://github.com/fitzsimmons/ffxiv-static-solver"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
